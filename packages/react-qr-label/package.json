@@ -67,7 +67,7 @@
   ],
   "publishConfig": {
     "access": "public",
-    "registry": "http://192.168.10.37:4873/"
+    "registry": "http://localhost:4873/"
   },
   "scripts": {
     "dev": "vite",
