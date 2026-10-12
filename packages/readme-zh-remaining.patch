@@ -1,0 +1,1666 @@
+diff --git a/README.md b/README.md
+--- a/README.md
++++ b/README.md
+@@ -1,281 +1,194 @@
+-# QR Layout Tool
+-
+-# 1
+-📥 第一步：克隆仓库
+-在终端中执行以下命令，将项目下载到本地：
+-
+-bash
+-git clone https://github.com/shashi089/qr-code-label-designer.git
+-cd qr-code-label-designer
+-📦 第二步：安装依赖
+-项目根目录下执行：
+-
+-bash
+-npm install
+-注意：该项目是一个 pnpm monorepo，根目录的 package.json 脚本中使用了 pnpm --filter 语法（例如 dev:ui 实际执行的是 pnpm --filter qrlayout-ui dev）。因此，你需要先全局安装 pnpm：
+-
+-bash
+-npm install -g pnpm
+-然后再执行 pnpm install 来安装所有工作区依赖：
+-
+-bash
+-pnpm install
+-🚀 第三步：启动开发服务器
+-依赖安装完成后，运行 UI 开发服务器：
+-
+-bash
+-npm run build:core
+-npm run dev:ui
+-这会启动 qrlayout-ui 包的 Vite 开发服务器，浏览器访问终端提示的地址（通常是 http://localhost:5173），即可看到可拖拽的标签设计器界面。
+-
+-
+-# 2
+-🖥️ 运行 Vue 3 示例
+-项目内置了 Vue 3 的演示应用，位于 examples/vue-demo 目录下。进入该目录并安装依赖后运行：
+-
+-bash
+-cd examples/vue-demo
+-pnpm install
+-pnpm dev
+-即可在浏览器中体验完整的 Vue 3 集成效果。
+-
+-**The open-source QR code label designer for developers. Design once, print everywhere.**
+-
+-[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+-[![npm version](https://img.shields.io/npm/v/qrlayout-core.svg?label=qrlayout-core)](https://www.npmjs.com/package/qrlayout-core)
+-[![npm version](https://img.shields.io/npm/v/qrlayout-ui.svg?label=qrlayout-ui)](https://www.npmjs.com/package/qrlayout-ui)
+-[![npm downloads](https://img.shields.io/npm/dm/qrlayout-core.svg?label=core+downloads)](https://www.npmjs.com/package/qrlayout-core)
+-[![TypeScript](https://img.shields.io/badge/TypeScript-Enabled-blue.svg)](https://www.typescriptlang.org/)
+-[![GitHub Stars](https://img.shields.io/github/stars/shashi089/qr-code-label-designer?style=social)](https://github.com/shashi089/qr-code-label-designer/stargazers)
+-
+----
+-
+-## Live Demos
+-
+-| Framework | Live Demo | Source Code |
+-| :--- | :--- | :--- |
+-| **React** | [▶ Open Demo](https://qr-layout-designer.netlify.app/) | [Source](https://github.com/shashi089/qr-code-label-designer/tree/main/examples/react-demo) |
+-| **Angular** | [▶ Open Demo](https://qr-layout-designer-angular-demo.netlify.app/) | [Source](https://github.com/shashi089/qr-code-label-designer/tree/main/examples/angular-demo) |
+-| **Svelte 5** | [▶ Open Demo](https://qr-layout-designer-svelte.netlify.app/) | [Source](https://github.com/shashi089/qr-code-label-designer/tree/main/examples/svelte-demo) |
+-| **Vue 3** | [▶ Open Demo](https://qr-layout-designer-vue.netlify.app/) | [Source](https://github.com/shashi089/qr-code-label-designer/tree/main/examples/vue-demo) |
+-
+-![QR Layout Designer Screenshot](./assets/layout_designer.png)
+-
+----
+-
+-## What Is This?
+-
+-**QR Layout Tool** is a complete solution for building applications that generate dynamic, printable QR code labels, stickers, and badges. Unlike basic QR generators that produce a single image, this tool gives you a full layout engine with a visual designer, data binding, and multi-format export.
+-
+-It is split into two focused npm packages:
+-
+-| Package | Purpose |
+-| :--- | :--- |
+-| [`qrlayout-core`](https://www.npmjs.com/package/qrlayout-core) | Headless rendering engine — use in any JS/TS project |
+-| [`qrlayout-ui`](https://www.npmjs.com/package/qrlayout-ui) | Embeddable drag-and-drop visual designer |
+-
+----
+-
+-## Features
+-
+-**Designer**
+-- Drag, resize, and position text, QR, and barcode elements on a canvas
+-- Multi-select elements with Ctrl+Click or Ctrl+A, then drag them together
+-- Align selected elements to each other or to the label edges
+-- Always-visible dashed borders so you can see field boundaries while editing
+-- Snap to grid, undo/redo, dark mode
+-
+-**Export**
+-- **ZPL** — for Zebra thermal printers; correct text alignment (left/center/right) and accurate QR code sizing at 203, 300, and 600 DPI
+-- **PDF** — via optional `jspdf` dependency
+-- **Canvas/PNG** — for image previews
+-
+-**Preview (built into the designer UI)**
+-- Preview PDF directly in the browser
+-- Preview ZPL with a live Labelary render — select DPI and copy the ZPL code
+-
+----
+-
+-## Quick Start
+-
+-### Headless (Core only)
+-
+-```bash
+-npm install qrlayout-core
+-```
+-
+-```typescript
+-import { StickerPrinter } from "qrlayout-core";
+-
+-const printer = new StickerPrinter();
+-
+-const layout = {
+-  id: "badge",
+-  name: "Employee Badge",
+-  width: 100, height: 60, unit: "mm",
+-  elements: [
+-    { id: "name", type: "text", x: 5, y: 5, w: 90, h: 12, content: "{{name}}", style: { fontSize: 16, fontWeight: "bold" } },
+-    { id: "qr",   type: "qr",   x: 35, y: 20, w: 30, h: 30, content: "{{id}}" }
+-  ]
+-};
+-
+-// Sync — standard DPI (203)
+-const zplPages = printer.exportToZPL(layout, [
+-  { name: "Alice",   id: "EMP-001" },
+-  { name: "Bob",     id: "EMP-002" },
+-  { name: "Charlie", id: "EMP-003" },
+-]);
+-
+-// Async — use for 300/600 DPI; renders QR as bitmap when needed for correct sizing
+-const zplPages = await printer.exportToZPLAsync(layout, records, { dpi: 300 });
+-```
+-
+-### Embedded Visual Designer
+-
+-```bash
+-npm install qrlayout-ui qrlayout-core
+-```
+-
+-```typescript
+-import { QRLayoutDesigner } from "qrlayout-ui";
+-import "qrlayout-ui/style.css";
+-
+-const designer = new QRLayoutDesigner({
+-  element: document.getElementById("editor"),
+-  onSave: (layout) => {
+-    fetch("/api/layouts", { method: "POST", body: JSON.stringify(layout) });
+-  }
+-});
+-```
+-
+-### PDF Export (optional)
+-
+-```bash
+-npm install jspdf
+-```
+-
+-```typescript
+-import { exportToPDF } from "qrlayout-core/pdf";
+-
+-const pdf = await exportToPDF(layout, [data1, data2]);
+-pdf.save("badges.pdf");
+-```
+-
+----
+-
+-## How It Works
+-
+-The layout JSON from `qrlayout-ui` is your single source of truth — store it in your database, load it back anytime, and pass it with real records to `qrlayout-core` to generate labels.
+-
+-```typescript
+-// Save from the designer
+-onSave: async (layout) => {
+-  await fetch("/api/layouts", { method: "POST", body: JSON.stringify(layout) });
+-}
+-
+-// Later — fetch and print
+-const layout  = await fetch("/api/layouts/employee-badge").then(r => r.json());
+-const records = await fetch("/api/employees").then(r => r.json());
+-
+-const printer = new StickerPrinter();
+-const pdf = await printer.exportToPDF(layout, records);
+-pdf.save("badges.pdf");
+-```
+-
+----
+-
+-## Use Cases
+-
+-| Industry | Example |
+-| :--- | :--- |
+-| 🏭 Manufacturing & Warehousing | ZPL shipping labels for Zebra printers |
+-| 🎟️ Events & Conferences | Personalized attendee badge generation |
+-| 🏥 Healthcare | Patient wristbands and asset tagging |
+-| 📦 Inventory & Retail | SKU labels with QR codes linking to product pages |
+-| 🏢 HR & Access Control | Employee ID cards and visitor passes |
+-| 🔧 MRO / Maintenance | Machine asset tags with scannable maintenance history links |
+-
+----
+-
+-## Project Structure
+-
+-```
+-qr-code-label-designer/
+-├── packages/
+-│   ├── core/             # qrlayout-core — headless rendering engine
+-│   ├── ui/               # qrlayout-ui  — visual drag-and-drop designer
+-│   ├── react-qr-label/
+-│   ├── vue-qr-label/
+-│   └── svelte-qr-label/
+-└── examples/
+-    ├── react-demo/
+-    ├── angular-demo/
+-    ├── svelte-demo/
+-    └── vue-demo/
+-```
+-
+----
+-
+-## Packages
+-
+-| Package | Version | Description | Docs |
+-| :--- | :--- | :--- | :--- |
+-| **`qrlayout-core`** | [![npm](https://img.shields.io/npm/v/qrlayout-core.svg)](https://www.npmjs.com/package/qrlayout-core) | Headless rendering & logic engine | [README](./packages/core/README.md) |
+-| **`qrlayout-ui`** | [![npm](https://img.shields.io/npm/v/qrlayout-ui.svg)](https://www.npmjs.com/package/qrlayout-ui) | Interactive visual designer | [README](./packages/ui/README.md) |
+-| **`react-qr-label`** | [![npm](https://img.shields.io/npm/v/react-qr-label.svg)](https://www.npmjs.com/package/react-qr-label) | React component wrapper | [README](./packages/react-qr-label/README.md) |
+-| **`vue-qr-label`** | [![npm](https://img.shields.io/npm/v/vue-qr-label.svg)](https://www.npmjs.com/package/vue-qr-label) | Vue 3 component wrapper | [README](./packages/vue-qr-label/README.md) |
+-| **`svelte-qr-label`** | [![npm](https://img.shields.io/npm/v/svelte-qr-label.svg)](https://www.npmjs.com/package/svelte-qr-label) | Svelte 5 component wrapper | [README](./packages/svelte-qr-label/README.md) |
+-
+----
+-
+-## Development
+-
+-```bash
+-git clone https://github.com/shashi089/qr-code-label-designer.git
+-cd qr-code-label-designer
+-npm install
+-
+-npm run dev:ui      # UI dev server
+-npm run build:core  # Build core
+-npm run build:ui    # Build UI
+-```
+-
+-See [CONTRIBUTING.md](./CONTRIBUTING.md) for contribution guidelines.
+-
+-See [CHANGELOG.md](./CHANGELOG.md) for release history.
+-
+----
+-
+-## Contributing
+-
+-Contributions, bug reports, and feature requests are welcome!
+-
+-1. Fork the repository
+-2. Create your feature branch: `git checkout -b feature/my-feature`
+-3. Commit your changes: `git commit -am 'Add my feature'`
+-4. Push to the branch: `git push origin feature/my-feature`
+-5. Open a Pull Request
+-
+-Found a bug or have an idea? [Open an Issue →](https://github.com/shashi089/qr-code-label-designer/issues)
+-
+----
+-
+-## Author
+-
+-**Shashidhar Naik** — [@shashi089](https://github.com/shashi089)
+-
+-## 🤝 Contributors
+-
+-- [@JayanthVishnu](https://github.com/JayanthVishnu)
+-- [@arun270892](https://github.com/arun270892)
+-
+----
+-
+-## License
+-
+-MIT © [Shashidhar Naik](https://github.com/shashi089)
+-
+----
+-
+-> Found this useful? Please [⭐ star the repository](https://github.com/shashi089/qr-code-label-designer) — it helps others discover the project!
+-
++# 二维码标签设计器 Plus
++
++用于设计、管理和打印二维码及条形码标签的工作区。支持可视化排版、动态数据绑定，以及 PNG、PDF 和 ZPL 导出。
++
++[Git 仓库](https://github.com/GrayWitch/qr-code-label-designer-plus) · [问题反馈](https://github.com/GrayWitch/qr-code-label-designer-plus/issues)
++
++![标签设计器界面](./assets/layout_designer.png)
++
++## 项目介绍
++
++项目包含无界面的标签渲染引擎、可嵌入的拖拽设计器，以及 React、Vue 3、Svelte 5 的组件封装。布局保存为 JSON，可以存入数据库，之后结合业务数据生成标签、贴纸或工牌。
++
++| 包 | 功能 | 文档 |
++| :--- | :--- | :--- |
++| `@amethc/qrlayout-core` | 标签渲染、图片/PDF/ZPL 导出、本地 ZPL 解析 | [核心引擎](./packages/core/README.md) |
++| `@amethc/qrlayout-ui` | 可视化拖拽设计器 | [设计器](./packages/ui/README.md) |
++| `@amethc/vue-qr-label` | Vue 3 组件封装 | [Vue 组件](./packages/vue-qr-label/README.md) |
++| `react-qr-label` | React 组件封装 | [React 组件](./packages/react-qr-label/README.md) |
++| `svelte-qr-label` | Svelte 5 组件封装 | [Svelte 组件](./packages/svelte-qr-label/README.md) |
++
++各包的安装名称以对应 `package.json` 为准。React、Svelte 包当前仍依赖未加作用域的 `qrlayout-core` 和 `qrlayout-ui`，其文档保留对应依赖名称。
++
++## 功能特性
++
++- 拖动、缩放和定位文本、二维码及条形码元素。
++- 使用 Ctrl+单击 或 Ctrl+A 多选元素，并整体拖动。
++- 将选中元素相互对齐，或对齐到标签边缘。
++- 编辑时始终显示元素边界，支持网格吸附、撤销/重做和暗色模式。
++- 使用 `{{variable}}` 绑定数据，支持将多个变量拼接为一个二维码内容。
++- 支持毫米、厘米、英寸及像素等尺寸单位。
++- 导出 PNG 图片、PDF 文件，以及 Zebra 热敏打印机使用的 ZPL 指令。
++- ZPL 导出支持 203、300、600 DPI；较大二维码可通过异步接口生成位图。
++- 支持 PDF 预览，以及部分 ZPL 指令的本地离线图片预览。
++
++## 本地开发
++
++在项目根目录安装工作区依赖并启动开发服务：
++
++```bash
++git clone https://github.com/GrayWitch/qr-code-label-designer-plus.git
++cd qr-code-label-designer-plus
++npm install
++npm run build:core
++npm run dev:ui
++```
++
++浏览器访问终端显示的开发地址。根目录脚本使用 npm 工作区命令；如选择 pnpm，也可以通过 `pnpm install` 安装依赖。
++
++```bash
++npm run build:ui     # 构建设计器
++npm run build:vue    # 构建 Vue 组件
++npm run build:react  # 构建 React 组件
++npm run build:all    # 构建所有组件包
++npm run test:core    # 运行核心引擎测试
++npm run dev:vue      # 启动 Vue 示例
++npm run dev:react    # 启动 React 组件示例
++```
++
++## 快速集成
++
++### 独立使用核心引擎
++
++```bash
++npm install @amethc/qrlayout-core
++```
++
++```typescript
++import { StickerPrinter, type StickerLayout } from '@amethc/qrlayout-core';
++
++const printer = new StickerPrinter();
++const layout: StickerLayout = {
++  id: 'badge',
++  name: '员工工牌',
++  width: 100,
++  height: 60,
++  unit: 'mm',
++  elements: [
++    {
++      id: 'name', type: 'text', x: 5, y: 5, w: 90, h: 12,
++      content: '{{name}}', style: { fontSize: 16, fontWeight: 'bold' },
++    },
++    { id: 'qr', type: 'qr', x: 35, y: 20, w: 30, h: 30, content: '{{id}}' },
++  ],
++};
++const records = [
++  { name: '张三', id: 'EMP-001' },
++  { name: '李四', id: 'EMP-002' },
++];
++
++// 同步生成 ZPL，默认 203 DPI。
++const zplPages = printer.exportToZPL(layout, records);
++
++// 较大二维码可使用异步导出，在需要时生成位图。
++const zpl300Pages = await printer.exportToZPLAsync(layout, records, { dpi: 300 });
++
++// 本地解析一张 ZPL 标签并生成 PNG 图片 Data URL。
++const dataUrl = await printer.renderZPLToDataURL(zplPages[0]);
++```
++
++### 嵌入可视化设计器
++
++```bash
++npm install @amethc/qrlayout-ui @amethc/qrlayout-core
++```
++
++```typescript
++import { QRLayoutDesigner } from '@amethc/qrlayout-ui';
++import '@amethc/qrlayout-ui/style.css';
++
++const designer = new QRLayoutDesigner({
++  element: document.getElementById('editor')!,
++  locale: 'zh-CN',
++  onSave: (layout) => {
++    fetch('/api/layouts', { method: 'POST', body: JSON.stringify(layout) });
++  },
++});
++```
++
++挂载容器需要设置明确的宽高。布局 JSON 是保存和渲染时使用的数据源，可以重新加载到设计器，也可以直接传给 `StickerPrinter`。
++
++### 导出 PDF
++
++PDF 功能需要安装可选依赖：
++
++```bash
++npm install jspdf
++```
++
++```typescript
++import { exportToPDF } from '@amethc/qrlayout-core/pdf';
++
++const pdf = await exportToPDF(layout, records);
++pdf.save('badges.pdf');
++```
++
++### 保存布局后批量打印
++
++```typescript
++const savedLayout = await fetch('/api/layouts/employee-badge').then(r => r.json());
++const employees = await fetch('/api/employees').then(r => r.json());
++const pdf = await printer.exportToPDF(savedLayout, employees);
++pdf.save('badges.pdf');
++```
++
++## 示例应用
++
++| 示例 | 说明 |
++| :--- | :--- |
++| [React 示例](./examples/react-demo/README.md) | 标签设计、员工管理和批量导出 |
++| [React 组件示例](./examples/react-qr-label-demo/README.md) | 集成 `react-qr-label` 的分栏工作台 |
++| [React 管理界面](./examples/demo-react/README.md) | 使用 Material UI 的参考实现 |
++| [Vue 示例](./examples/vue-demo/README.md) | 员工、设备和库位标签管理 |
++| [Svelte 示例](./examples/svelte-demo/README.md) | 基于 SvelteKit 的标签应用 |
++| [Svelte 组件示例](./examples/svelte-qr-label-demo/README.md) | 集成 `svelte-qr-label` 的示例 |
++| [Angular 示例](./examples/angular-demo/README.md) | 标签设计与主数据管理 |
++
++## 应用场景
++
++| 行业 | 示例 |
++| :--- | :--- |
++| 制造与仓储 | 运输标签、设备标签、库位标签 |
++| 活动与会议 | 个性化参会证、二维码签到工牌 |
++| 医疗 | 患者腕带、设备与样本标签 |
++| 库存与零售 | SKU 标签、价格标签、商品链接二维码 |
++| 人事与门禁 | 员工工牌、访客通行证 |
++| 维修与维护 | 带维护记录链接的设备资产标签 |
++
++## 目录结构
++
++```text
++packages/
++├── core/             # 核心渲染与打印引擎
++├── ui/               # 可视化拖拽设计器
++├── react-qr-label/   # React 组件
++├── vue-qr-label/     # Vue 3 组件
++└── svelte-qr-label/  # Svelte 5 组件
++examples/            # 各框架集成示例
++```
++
++## 参与开发
++
++欢迎提交问题反馈和合并请求。开发流程：
++
++1. 创建分支：`git checkout -b feature/my-feature`。
++2. 完成修改并执行相关检查。
++3. 提交变更：`git commit -m '添加功能'`。
++4. 推送分支：`git push origin feature/my-feature`。
++5. 在当前仓库提交合并请求。
++
++开发说明见 [CONTRIBUTING.md](./CONTRIBUTING.md)，版本记录见 [CHANGELOG.md](./CHANGELOG.md)。
++
++## 许可证
++
++MIT，详见 [LICENSE](./LICENSE)。
+diff --git a/examples/vue-demo/README.md b/examples/vue-demo/README.md
+--- a/examples/vue-demo/README.md
++++ b/examples/vue-demo/README.md
+@@ -1,105 +1,107 @@
+-# QR Layout Studio
+-
+-**QR Layout Studio** is a professional management dashboard designed to streamline the creation, organization, and printing of QR code-based labels for industrial and specialized environments. It serves as a centralized hub for managing Employees, Asset Machines, and Storage Locations, bridging the gap between digital data and physical labeling.
+-
+-![Dashboard Overview](docs/images/dashboard.png)
+-
+-## What is it?
+-
+-This tool is a specialized **Label Management System**. Unlike generic QR generators, QR Layout Studio is entity-aware. It understands that an "Employee" label needs names and IDs, while a "Machine" label needs model numbers and service dates. It provides a visual interface to design these templates and a management capability to organize the data that populates them.
+-
+-## Key Features
+-
+--   **Visual Label Designer**: A drag-and-drop interface to create pixel-perfect label templates.
+--   **Dynamic Data Binding**: Link visual elements to data fields (e.g., `{{fullName}}`, `{{assetID}}`).
+--   **Batch Generation**: Select 100 employees and print 100 unique ID badges in one click (PDF, PNG, or ZPL).
+--   **Entity Modules**: Dedicated workflows for:
+-    -   **Employees**: ID badges and access cards.
+-    -   **Machines**: Asset tags and equipment plates.
+-    -   **Storage**: Bin labels and rack location tags.
+--   **ZPL Support**: Native support for Industrial Thermal Printers (Zebra Programming Language).
+-
+-## Application Walkthrough
+-
+-### 1. The Dashboard
+-Your central command center. Quickly access different modules or jump straight into designing a new layout.
+-![Dashboard](docs/images/dashboard.png)
+-
+-### 2. Label Templates
+-Manage your collection of label designs. Create specific templates for different purposes (e.g., "Small Asset Tag", "Large Warehouse Bin Label").
+-![Label Templates](docs/images/labels.png)
+-
+-### 3. Visual Designer
+-The core of the application. Customize dimensions, add text, QR codes, and images. Drag elements to position them precisely where they need to be.
+-![Visual Designer](docs/images/designer.png)
+-
+-### 4. Employee Management
+-Maintain your staff directory. Add new hires and instantly generate their ID badges using your pre-designed templates.
+-![Employees](docs/images/employees.png)
+-
+-### 5. Machine Assets
+-Track your heavy machinery and tools. Generate durable asset tags that link to maintenance logs or digital twins.
+-![Machines](docs/images/machines.png)
+-
+-### 6. Storage & Warehouse
+-Organize your inventory locations. Generate sequential logic for aisles, racks, and bins to ensure every storage spot is labeled.
+-![Storage](docs/images/storage.png)
+-
+-## Example Usage: Onboarding a New Employee
+-
+-Here is a typical workflow for issuing a new ID badge:
+-
+-1.  **Create Template**: Go to **Labels** and design a "Standard ID Badge" (85mm x 54mm). Add `{{Name}}` and `{{EmployeeID}}` fields.
+-2.  **Add Data**: Navigate to **Employees** and click **"Add Employee"**. Enter "Jane Doe" and ID "EMP-2024".
+-3.  **Select & Print**:
+-    -   Locate Jane Doe in the list.
+-    -   Select the "Standard ID Badge" template from the dropdown.
+-    -   Click **Export PDF**.
+-4.  **Result**: A print-ready PDF of Jane's ID card is generated instantly.
+-
+----
+-
+-## Installation & Setup
+-
+-### Prerequisites
+--   Node.js (Latest LTS)
+--   npm
+-
+-### Quick Start
+-
+-1.  **Install dependencies**
+-    ```bash
+-    npm install
+-    ```
+-
+-2.  **Start the dev server**
+-    ```bash
+-    npm run dev
+-    ```
+-
+-3.  **Build for production**
+-    ```bash
+-    npm run build
+-    ```
+-
+-## Folder Structure
+-
+-```
+-vue-demo/
+-├── src/
+-│   ├── components/        # Reusable UI elements
+-│   ├── views/             # Page layouts (Home, Designer, Employees, etc.)
+-│   ├── services/          # Data logic and storage handling
+-│   └── assets/            # Static resources
+-├── docs/
+-│   └── images/            # Screenshots for this README
+-├── public/                # Public assets
+-└── index.html             # Entry point
+-```
+-
+-## Technologies
+-
+--   **Vue 3** & **TypeScript**: Robust and type-safe frontend.
+--   **Vite**: Lightning-fast tooling.
+--   **Tailwind CSS**: Modern utility-first styling.
+--   **Pinia/Storage**: efficient state management.
++# 标签管理工作台（Vue 3）
++
++用于创建、管理和打印二维码标签的 Vue 3 示例应用，涵盖员工、设备资产和仓储库位管理，将业务数据与实际标签连接起来。
++
++![管理首页](docs/images/dashboard.png)
++
++## 项目介绍
++
++本应用根据业务实体设计标签模板：员工标签使用姓名和编号，设备标签使用型号和维护日期。通过可视化界面设计模板，并管理填充模板的数据。
++
++## 功能特性
++
++- **可视化设计器**：拖拽创建标签模板，调整尺寸及元素位置。
++- **动态数据绑定**：将元素绑定到 `{{fullName}}`、`{{assetID}}` 等字段。
++- **批量生成**：选择多条记录，一次导出对应的 PDF、PNG 或 ZPL 标签。
++- **业务模块**：员工工牌与门禁卡、设备资产标签、库位与货架标签。
++- **ZPL 支持**：生成 Zebra 工业热敏打印机使用的指令。
++
++## 页面介绍
++
++### 管理首页
++
++快速进入业务模块，或直接创建新布局。
++
++![首页](docs/images/dashboard.png)
++
++### 标签模板
++
++创建和管理不同用途的模板，例如小型资产标签和大型库位标签。
++
++![标签模板](docs/images/labels.png)
++
++### 可视化设计器
++
++调整标签尺寸，添加元素并拖动到指定位置。
++
++![可视化设计器](docs/images/designer.png)
++
++### 员工管理
++
++维护员工资料，使用已有模板生成工牌。
++
++![员工管理](docs/images/employees.png)
++
++### 设备资产
++
++管理设备和工具，通过资产标签中的二维码关联维护记录等信息。
++
++![设备资产](docs/images/machines.png)
++
++### 仓储库位
++
++管理通道、货架及储位编号，为每个位置生成标签。
++
++![仓储库位](docs/images/storage.png)
++
++## 示例：为新员工生成工牌
++
++1. 在标签页面设计 85 mm × 54 mm 的标准工牌，添加姓名和员工编号字段。
++2. 在员工页面新增一条记录，填写姓名“张三”和编号 `EMP-2024`。
++3. 在列表中选中该员工，选择标准工牌模板，点击导出 PDF。
++4. 下载生成的可打印工牌 PDF。
++
++## 安装与启动
++
++使用 Node.js 长期支持版本及 npm，在仓库根目录执行：
++
++```bash
++npm install
++npm run build:core
++npm run build:ui
++npm run build:vue
++npm run dev:vue
++```
++
++也可以在示例目录启动或构建：
++
++```bash
++cd examples/vue-demo
++npm run dev
++npm run build
++```
++
++## 目录结构
++
++```text
++vue-demo/
++├── src/
++│   ├── components/  # 复用组件
++│   ├── views/       # 首页、设计器、员工等页面
++│   ├── services/    # 数据与存储逻辑
++│   └── assets/      # 静态资源
++├── docs/images/     # 文档截图
++├── public/          # 公共资源
++└── index.html       # 网页入口
++```
++
++## 技术栈
++
++- Vue 3 与 TypeScript。
++- Vite 构建工具。
++- Tailwind CSS 样式。
++- Pinia 与本地存储，用于状态和数据管理。
++
++## 许可证
++
++MIT，详见 [LICENSE](../../LICENSE)。
+diff --git a/examples/svelte-demo/README.md b/examples/svelte-demo/README.md
+--- a/examples/svelte-demo/README.md
++++ b/examples/svelte-demo/README.md
+@@ -1,83 +1,65 @@
+-# SvelteKit QR Label Designer
+-
+-An industrial-grade QR code label design and printing application built with [SvelteKit](https://kit.svelte.dev/) and Tailwind CSS. This project is a modern port of the React-based `react-demo`, leveraging Svelte 5's runes for state management and creating a high-performance, SEO-friendly web application.
+-
+-##  Live Demo
+-
+-**[View Live Application](https://qr-layout-designer-svelte.netlify.app/)**
+-
+-##  Features
+-
+-*   **Visual Label Designer**: Drag-and-drop interface to create pixel-perfect label templates for any industrial use case.
+-*   **Master Data Management**: Dedicated modules for managing:
+-    *   **Employees**: Generate ID badges with QR codes.
+-    *   **Machines**: create asset tags for equipment tracking.
+-    *   **Storage (BINs)**: manage warehouse locations and print bin labels.
+-*   **Batch Printing**: Select multiple records and export labels in bulk as **PDF**, **PNG**, or **ZPL** (Zebra Programming Language) for thermal printers.
+-*   **Local Persistence**: All data is stored securely in your browser's LocalStorage - no backend required for the demo.
+-*   **Responsive Design**: A premium, mobile-friendly UI built with Tailwind CSS.
+-
+-##  Tech Stack
+-
+-*   **Framework**: SvelteKit (Svelte 5)
+-*   **Styling**: Tailwind CSS v4
+-*   **Icons**: Lucide Svelte
+-*   **Core Logic**: `qrlayout-core` (Label generation, PDF/ZPL export)
+-*   **UI Components**: `qrlayout-ui` (Designer canvas)
+-
+-##  Installation
+-
+-1.  **Clone the repository**:
+-    ```bash
+-    git clone <repository-url>
+-    cd svelte-demo
+-    ```
+-
+-2.  **Install dependencies**:
+-    ```bash
+-    npm install
+-    ```
+-
+-3.  **Start the development server**:
+-    ```bash
+-    npm run dev
+-    ```
+-
+-4.  **Open your browser**:
+-    Navigate to `http://localhost:5173` to launch the application.
+-
+-##  Building for Production
+-
+-To create a production version of your app:
+-
+-```bash
+-npm run build
+-```
+-
+-You can preview the production build with `npm run preview`.
+-
+-##  Theme & Customization
+-
+-The application uses a **Teal & Emerald** industrial theme. 
+-- Primary Color: `teal-600`
+-- Accent Color: `emerald-500` & `amber-500`
+-
+-To customize the theme, edit the Tailwind classes in `src/routes/+layout.svelte` and the individual page components.
+-
+-##  Project Structure
+-
+-*   `src/routes/`: Application pages (file-based routing).
+-    *   `labels/`: Label template management.
+-    *   `employees/`: Employee master data.
+-    *   `machines/`: Machine assets.
+-    *   `storage/`: Warehouse storage bins.
+-*   `src/lib/components/`: Reusable UI components (e.g., `Table.svelte`).
+-*   `src/lib/services/`: Business logic and data services (e.g., `storage.ts`).
+-
+-##  Contributing
+-
+-Feel free to fork this project and submit pull requests. For major changes, please open an issue first to discuss what you would like to change.
+-
+-##  License
+-
+-MIT
++# SvelteKit 二维码标签设计器
++
++使用 [SvelteKit](https://kit.svelte.dev/) 和 Tailwind CSS 构建的标签设计与打印应用，采用 Svelte 5 Runes 管理状态，提供适用于桌面和移动端的界面。
++
++## 功能特性
++
++- **可视化设计**：拖拽创建标签模板。
++- **主数据管理**：管理员工工牌、设备资产标签和仓库库位标签。
++- **批量打印**：选中多条记录，批量导出 PDF、PNG 或热敏打印机使用的 ZPL。
++- **本地持久化**：示例数据保存到浏览器 `localStorage`，无需后端。
++- **响应式界面**：使用 Tailwind CSS 适配不同屏幕尺寸。
++
++## 技术栈
++
++- SvelteKit 与 Svelte 5。
++- Tailwind CSS 4。
++- Lucide Svelte 图标。
++- `qrlayout-core`：标签生成、PDF/ZPL 导出。
++- `qrlayout-ui`：设计器画布。
++
++## 安装与启动
++
++```bash
++git clone https://github.com/GrayWitch/qr-code-label-designer-plus.git
++cd qr-code-label-designer-plus/examples/svelte-demo
++npm install
++npm run dev
++```
++
++浏览器访问 `http://localhost:5173`，或终端显示的地址。
++
++## 生产构建
++
++```bash
++npm run build
++npm run preview
++```
++
++第一条命令生成生产版本，第二条命令在本地预览构建结果。
++
++## 主题定制
++
++默认使用青绿色与翠绿色主题：主色为 `teal-600`，强调色为 `emerald-500` 和 `amber-500`。
++
++修改 `src/routes/+layout.svelte` 及各页面组件中的 Tailwind 类名即可调整主题。
++
++## 目录结构
++
++| 路径 | 说明 |
++| :--- | :--- |
++| `src/routes/` | 基于文件路由的应用页面 |
++| `src/routes/labels/` | 标签模板管理 |
++| `src/routes/employees/` | 员工主数据 |
++| `src/routes/machines/` | 设备资产 |
++| `src/routes/storage/` | 仓储库位 |
++| `src/lib/components/` | `Table.svelte` 等复用组件 |
++| `src/lib/services/` | `storage.ts` 等业务与数据服务 |
++
++## 参与开发
++
++欢迎提交合并请求。重大改动可先在[问题反馈](https://github.com/GrayWitch/qr-code-label-designer-plus/issues)中讨论。
++
++## 许可证
++
++MIT，详见 [LICENSE](../../LICENSE)。
+diff --git a/examples/react-qr-label-demo/README.md b/examples/react-qr-label-demo/README.md
+--- a/examples/react-qr-label-demo/README.md
++++ b/examples/react-qr-label-demo/README.md
+@@ -1,88 +1,56 @@
+-# React QR Label Demo
+-
+-> 🌐 **Live Demo Application**: [react-qr-label-designer.netlify.app](https://react-qr-label-designer.netlify.app/)
+-
+-This workspace showcases a live integration of `react-qr-label` — an embeddable drag-and-drop label designer and headless batch-mail-merge printing engine for React. 
+-
+-The application is structured as a **Sticker Studio** split-panel workspace where you can visually design label layouts and instantly test printing them against mock databases.
+-
+----
+-
+-## Key Features
+-
+-### 1. Sticker Studio Split-Panel Workspace
+-* **Layout list sidebar**: Manage and select layout templates (such as Employee ID Badges or Machine Asset Tags). Edit layouts in the full-screen visual canvas or delete them.
+-* **Consolidated Sandbox Database**: Automatically swaps the data grid to match the target schema (e.g. Employee or Machine) of the active template. Select rows to trigger instant batch prints.
+-* **No Context Switching**: Edit your template canvas, save, and immediately test batch-printing on the same screen!
+-
+-### 2. Collapsible Developer Studio
+-* **Toggleable Panel**: Hidden by default to keep data grids spacious. Opens with a fluid slide-in animation when clicked.
+-* **React Embed Code**: Generates copy-paste ready JSX/TS integration blocks reflecting your current schema parameters.
+-* **Headless print reference**: Shows how to run batch exports programmatically using the headless `StickerPrinter` engine and sub-path PDF exports.
+-* **Layout JSON exporter**: Inspects and copies the raw active template JSON to pass directly as initial layouts in your code.
+-
+-### 3. High-Performance Print Engine
+-* **Batch PNG**: Canvas-based local image downloads (one per record).
+-* **Batch PDF**: Combines all records into a single multi-page PDF locally.
+-* **Dynamic ZPL**: Translates active design canvas coords, shapes, texts, and QR codes into Zebra Programming Language (ZPL) commands for industrial thermal label printing.
+-
+----
+-
+-## Industry Use Cases
+-
+-Our visual QR label designer and batch print pipeline solves label generation needs across various industries:
+-
+-### 💼 Workforce & Event Badges
+-* **Use Case**: Security access cards, corporate ID badges, event credentials, and visitor passes.
+-* **Capability**: Automatically merges employee names, departments, and join dates into layouts. Embeds a QR code containing security check URLs or digital business card links.
+-
+-### 🏭 Asset Tagging & Industrial Maintenance
+-* **Use Case**: Plant machinery tags, hardware server labels, facility tools, and company laptop spec plates.
+-* **Capability**: Places asset codes and locations onto high-contrast tags. Connects dynamic QR codes directly to maintenance logging databases or installation manuals.
+-
+-### 📦 Logistics & Warehouse Location Tags
+-* **Use Case**: Inventory storage bin labels, rack identifiers, cold-storage shelves, and shipping package labels.
+-* **Capability**: Merges aisle codes, rack numbers, and storage type details. Exports directly to ZPL files, allowing developers to send raw command streams over sockets to network-connected Zebra thermal printers.
+-
+-### 🏷️ Retail & Pricing Barcodes
+-* **Use Case**: Product shelf price cards, spec tags, discounts, and promo code labels.
+-* **Capability**: Binds product SKU, pricing, and specs, printing high-density QR coupons for customer scan-and-buy triggers.
+-
+----
+-
+-## Getting Started
+-
+-### Prerequisites
+-* Node.js (v18 or higher)
+-* npm
+-
+-### Installation
+-
+-1. Navigate to this demo directory:
+-   ```bash
+-   cd examples/react-qr-label-demo
+-   ```
+-
+-2. Install workspace dependencies:
+-   ```bash
+-   npm install
+-   ```
+-
+-3. Run the local development server:
+-   ```bash
+-   npm run dev
+-   ```
+-
+----
+-
+-## Usage Guide
+-
+-1. **Preset Stories**: On the landing page, choose an industry preset (e.g. **Staff Badge** or **Asset Spec Tag**) to preload templates and dataset sandboxes.
+-2. **Visual Designer**: Click **"Edit Canvas"** on any template to launch the full-screen visual designer. Drag elements, bind variables (like `{{fullName}}`), style borders/fonts, and click **"Save"**.
+-3. **Database Sandbox**: Select records using checkboxes, then click the appearing batch actions (**PNG**, **PDF**, or **ZPL**) to immediately download print jobs.
+-4. **Developer Integration**: Click **"Show Dev Studio"** in the table header to copy embed codes or layout schemas directly into your product.
+-
+----
+-
+-## License
+-MIT
++# React 二维码标签组件示例
++
++展示如何集成 `react-qr-label`，在 React 中嵌入拖拽设计器，并通过无界面的打印引擎批量合并数据生成标签。
++
++应用采用分栏标签工作台，可以设计模板，并立即使用示例数据测试打印。
++
++## 功能特性
++
++### 标签工作台
++
++- 在侧栏管理和选择员工工牌、设备资产标签等模板，可全屏编辑或删除布局。
++- 根据当前模板的目标实体自动切换数据表格，选择记录后批量打印。
++- 在同一页面完成模板设计、保存和打印测试。
++
++### 可折叠开发面板
++
++- 面板默认隐藏，展开后查看集成示例。
++- 根据当前数据结构生成可复制的 JSX/TypeScript 集成代码。
++- 展示通过 `StickerPrinter` 和 PDF 子路径接口批量导出的方式。
++- 查看并复制当前布局 JSON，作为业务应用中的初始布局。
++
++### 打印与导出
++
++- **PNG**：通过 Canvas 在本地为每条记录生成图片下载。
++- **PDF**：在本地将全部记录合并成一个多页 PDF。
++- **ZPL**：将布局位置、文本和二维码转换为工业热敏标签打印指令。
++
++## 应用场景
++
++| 场景 | 用途 |
++| :--- | :--- |
++| 员工与活动工牌 | 合并姓名、部门和入职日期，生成门禁卡、参会证、访客证；二维码可关联验证网址或电子名片。 |
++| 设备与工业维护 | 生成设备、服务器、工具和电脑资产标签，关联维护记录或安装手册。 |
++| 物流与仓储 | 合并通道、货架、库位信息，生成仓储或运输标签；ZPL 可发送给网络热敏打印机。 |
++| 零售与价格标签 | 绑定商品 SKU、价格和规格，生成价格牌、促销标签或优惠二维码。 |
++
++## 启动方式
++
++使用 Node.js 18 或更高版本及 npm。
++
++```bash
++cd examples/react-qr-label-demo
++npm install
++npm run dev
++```
++
++## 使用流程
++
++1. 在首页选择员工工牌或资产标签等行业预设，加载模板和示例数据。
++2. 打开模板的画布编辑器，拖动元素、绑定 `{{fullName}}` 等变量，设置边框和字体后保存。
++3. 在数据表格中勾选记录，通过 PNG、PDF 或 ZPL 批量操作生成打印文件。
++4. 展开开发面板，复制组件嵌入代码或布局数据结构。
++
++## 许可证
++
++MIT，详见 [LICENSE](../../LICENSE)。
+diff --git a/examples/svelte-qr-label-demo/README.md b/examples/svelte-qr-label-demo/README.md
+--- a/examples/svelte-qr-label-demo/README.md
++++ b/examples/svelte-qr-label-demo/README.md
+@@ -1,39 +1,37 @@
+-# svelte-qr-label-demo
+-
+-**Interactive Svelte 5 & SvelteKit demo for `svelte-qr-label`.**
+-
+-This application demonstrates embedding the visual drag-and-drop QR Label Designer into a SvelteKit app, managing custom sticker templates, executing live entity data bindings, and printing thermal ZPL or PDF badges.
+-
+----
+-
+-## Features
+-
+-- **Sticker Studio**: Create, edit, duplicate, and delete QR sticker layouts.
+-- **Entity Master**: Sample data manager for Employees and Machinery with real-time barcode / QR label previews.
+-- **Export Capabilities**: Client-side PDF export, PNG download, and Zebra thermal printer ZPL output.
+-- **Svelte 5 Runes**: Built using `$state`, `$derived`, `$effect`, and `untrack()` for smooth state synchronization and continuous property drawer editing.
+-
+----
+-
+-## Getting Started
+-
+-1. **Install dependencies**:
+-   ```bash
+-   npm install
+-   ```
+-
+-2. **Start the development server**:
+-   ```bash
+-   npm run dev
+-   ```
+-
+-3. **Check TypeScript & Format**:
+-   ```bash
+-   npm run check
+-   npm run lint
+-   ```
+-
+-4. **Build for Production**:
+-   ```bash
+-   npm run build
+-   ```
++# Svelte 二维码标签组件示例
++
++用于 `svelte-qr-label` 的 Svelte 5 与 SvelteKit 交互示例。展示如何嵌入拖拽标签设计器、管理模板、绑定业务数据，并生成 ZPL 或 PDF 工牌。
++
++## 功能特性
++
++- **标签工作台**：创建、编辑、复制和删除二维码标签布局。
++- **主数据管理**：管理员工及设备示例数据，实时预览条形码和二维码标签。
++- **导出**：在客户端导出 PDF、下载 PNG，以及生成 Zebra 热敏打印机使用的 ZPL。
++- **Svelte 5 Runes**：使用 `$state`、`$derived`、`$effect` 和 `untrack()`，保持状态同步及属性抽屉编辑连续性。
++
++## 启动方式
++
++进入示例目录后安装依赖并启动开发服务：
++
++```bash
++cd examples/svelte-qr-label-demo
++npm install
++npm run dev
++```
++
++## 类型与格式检查
++
++```bash
++npm run check
++npm run lint
++```
++
++## 生产构建
++
++```bash
++npm run build
++```
++
++## 许可证
++
++MIT，详见 [LICENSE](../../LICENSE)。
+diff --git a/examples/react-demo/README.md b/examples/react-demo/README.md
+--- a/examples/react-demo/README.md
++++ b/examples/react-demo/README.md
+@@ -1,88 +1,64 @@
+-# QR Layout Demo Application
+-
+-A comprehensive React application demonstrating the capabilities of the `qrlayout-ui` and `qrlayout-core` packages. This demo showcases a full-featured QR code badge implementation with design, management, and export capabilities.
+-
+-## Features
+-
+-### 1. Label Designer (`LabelList` & `QRLayoutDesigner`)
+-- **Visual Editor**: Drag-and-drop interface for creating sticker layouts.
+-- **Rich Elements**: Support for Text, QR Codes, and Images (coming soon).
+-- **Customization**: Fine-tune properties like font size, alignment, dimensions, and positioning.
+-- **Save & Load**: Layouts are persisted to `localStorage`.
+-
+-### 2. Employee Master Management
+-- **CRUD Operations**: Add, Edit, and Delete employee records.
+-- **Data Persistence**: Employee data is stored locally.
+-- **Search & Filter**: Efficiently manage your employee database.
+-
+-### 3. Batch Export & Printing
+-- **Multi-Selection**: Select multiple employees from the master list.
+-- **Layout Selection**: Apply any designed sticker layout to the selected records.
+-- **Export Options**:
+-    - **PNG**: Download individual high-quality badge images.
+-    - **PDF**: Generate printable PDF files (individual or batch).
+-    - **ZPL**: Generate ZPL code for industrial label printers.
+-
+-## Tech Stack
+-- **Framework**: React 19 + Vite
+-- **Styling**: Tailwind CSS 4
+-- **Icons**: Lucide React
+-- **Core Libraries**: `qrlayout-core`, `qrlayout-ui`
+-
+-## Getting Started
+-
+-### Prerequisites
+-- Node.js (v18 or higher recommended)
+-- `npm` or `pnpm`
+-
+-### Installation
+-
+-1. Navigate to the project root:
+-   ```bash
+-   cd examples/react-demo
+-   ```
+-
+-2. Install dependencies:
+-   ```bash
+-   npm install
+-   ```
+-
+-3. Start the development server:
+-   ```bash
+-   npm run dev
+-   ```
+-
+-## Usage Guide
+-
+-### Designing a Badge
+-1. Navigate to the **"Labels"** tab.
+-2. Click **"New Layout"** or select an existing one.
+-3. Use the designer to drag elements onto the canvas.
+-4. Configure element properties (content, position, size) in the sidebar.
+-5. Click **"Save"** to persist your layout.
+-
+-### Managing Employees
+-1. Navigate to the **"Employees"** tab.
+-2. Click **"Add Employee"** to create a new record.
+-3. Fill in the details (Name, ID, Department, etc.) and save.
+-
+-### Batch Exporting Badges
+-1. In the **"Employees"** tab, verify you have at least one Layout saved.
+-2. Select a **Layout Template** from the dropdown at the top.
+-3. Use the checkboxes to select one or more employees.
+-4. Click the **PNG**, **PDF**, or **ZPL** button in the appearing action bar to export.
+-
+-## Project Structure
+-
+-```
+-src/
+-├── components/     # Generic reusable components (e.g., Table)
+-├── features/       # Feature-specific modules
+-│   ├── employees/  # Employee Master logic
+-│   └── labels/     # Label Designer logic
+-├── services/       # Shared services (storage, etc.)
+-└── App.tsx         # Main application entry
+-```
+-
+-## License
+-MIT
++# 二维码标签示例应用（React）
++
++使用 React 展示 `qrlayout-ui` 和 `qrlayout-core` 的标签设计、员工管理以及批量导出功能。
++
++## 功能特性
++
++### 标签设计器（`LabelList` 与 `QRLayoutDesigner`）
++
++- 拖拽创建标签布局，支持文本和二维码；图片元素为后续计划。
++- 调整字号、对齐、尺寸及元素位置。
++- 使用 `localStorage` 保存和加载布局。
++
++### 员工管理
++
++- 新增、编辑、删除员工记录。
++- 在本地保存员工数据，并支持搜索和筛选。
++
++### 批量导出与打印
++
++- 从员工列表勾选多条记录，并选择布局模板。
++- 下载单张 PNG 工牌图片。
++- 生成单张或批量可打印 PDF。
++- 生成用于工业标签打印机的 ZPL 指令。
++
++## 技术栈
++
++- React 19 与 Vite。
++- Tailwind CSS 4。
++- Lucide React 图标。
++- `qrlayout-core`、`qrlayout-ui`。
++
++## 启动方式
++
++建议使用 Node.js 18 或更高版本，以及 npm 或 pnpm。
++
++```bash
++cd examples/react-demo
++npm install
++npm run dev
++```
++
++## 使用流程
++
++1. 打开标签页面，点击新建布局或选择已有布局。
++2. 将元素拖入画布，在侧栏设置内容、位置和尺寸，然后保存。
++3. 打开员工页面，新增员工并填写姓名、编号、部门等信息。
++4. 确认至少保存了一个布局，在顶部下拉框选择模板。
++5. 勾选员工，点击操作栏中的 PNG、PDF 或 ZPL 按钮批量导出。
++
++## 目录结构
++
++```text
++src/
++├── components/     # 通用复用组件，如表格
++├── features/       # 业务模块
++│   ├── employees/  # 员工管理逻辑
++│   └── labels/     # 标签设计逻辑
++├── services/       # 存储等共享服务
++└── App.tsx         # 应用入口
++```
++
++## 许可证
++
++MIT，详见 [LICENSE](../../LICENSE)。
+diff --git a/examples/demo-react/README.md b/examples/demo-react/README.md
+--- a/examples/demo-react/README.md
++++ b/examples/demo-react/README.md
+@@ -1,59 +1,53 @@
+-# QR Layout Studio - React Demo
+-
+-This application is a comprehensive reference implementation of the **[`qrlayout-core`](../../packages/core)** package. It demonstrates how to build a high-performance, visual QR code layout designer and management system using React, TypeScript, and Material UI.
+-
+-##  Overview
+-
+-The **React Demo** serves as a "Ready-to-Use" playground and a boilerplate for developers who want to integrate QR sticker generation into their own business applications. It moves beyond simple generation by providing a full-blown **Visual Editor** with drag-and-drop capabilities.
+-
+-##  Key Features
+-
+-### 1. Visual Layout Designer
+-- **Drag-and-Resize**: Intuitively move and scale elements (Text and QR codes) directly on a live canvas.
+-- **Advanced Text Alignment**: Precise control over placement with both **Horizontal** (Left, Center, Right) and **Vertical** (Top, Middle, Bottom) alignment.
+-- **Dynamic QR Separator**: Custom separators (like `|`, `;`, `:`) for joining multiple data fields into a single QR code.
+-- **Live Dynamic Data Preview**: Uses localized Indian sample data (e.g., *Rajesh Sharma*) to show exactly how your stickers will look with real values.
+-
+-### 2. Multi-Entity Architecture
+-The designer is schema-driven, allowing you to manage different types of data:
+-- **Employees**: For ID cards and badges.
+-- **Vendors**: For supplier tracking and shipping labels.
+-- **Machines**: For asset management and maintenance logs.
+-
+-### 3. Professional Export Options
+-- **PNG/JPEG**: High-quality images for web use or digital sharing.
+-- **PDF**: Print-ready documents with precise scaling.
+-- **ZPL**: Generate raw code for industrial **Zebra** thermal printers.
+-
+-## Industry Use Cases
+-
+-This tool is highly versatile and can be used in various market segments:
+-
+-- **Manufacturing & Logistics**: Tagging machinery with maintenance QR codes or labeling warehouse bins for inventory management.
+-- **Corporate & Events**: Generating professional visitor passes and employee ID cards on the fly.
+-- **Retail**: Creating price tags and product labels that link to digital catalogs or tracking systems.
+-- **Healthcare**: Labeling equipment or patient records with unique identifiers for quick scanning.
+-
+-## How it works with `qrlayout-core`
+-
+-This demo showcases the power of the core library by:
+-1. **Defining Layouts**: Converting the visual state of the designer into a `StickerLayout` JSON object.
+-2. **Rendering**: Using `StickerPrinter.renderToCanvas` for the real-time editor preview.
+-3. **Exporting**: Leveraging the library's built-in PDF and ZPL exporters to handle the heavy lifting of document generation.
+-
+-##  Open Source & Contributions
+-
+-This project is **Open Source**. We believe in the power of community collaboration!
+-
+-- **Use it freely**: Fork this code and use it in your own commercial or private projects.
+-- **Suggest Updates**: Found a bug or have a feature idea (like Barcode support or cloud syncing)? Open an issue or a PR.
+-- **Improve the Core**: Contributions to the rendering logic in `qrlayout-core` are also highly welcome.
+-
+-##  Getting Started
+-
+-1. Navigate to this directory: `cd examples/demo-react`
+-2. Install dependencies: `npm install`
+-3. Run the dev server: `npm run dev`
+-
+----
+-
++# 标签工作台：React 示例
++
++基于 [`qrlayout-core`](../../packages/core/README.md) 的参考实现，使用 React、TypeScript 和 Material UI 构建可视化二维码布局设计与管理界面。
++
++本示例可作为业务系统集成标签生成能力的起点，包含拖拽式可视化编辑器。
++
++## 功能特性
++
++### 可视化布局设计
++
++- 在实时画布中拖动、缩放文本和二维码。
++- 控制水平对齐（左、中、右）及垂直对齐（顶、中、底）。
++- 使用 `|`、`;`、`:` 等分隔符，将多个字段拼接为一个二维码。
++- 使用示例数据实时预览标签内容。
++
++### 多实体管理
++
++设计器根据数据结构配置工作，支持员工工牌、供应商跟踪标签，以及设备资产和维护标签。
++
++### 导出
++
++- PNG/JPEG：用于网页或数字分享的图片。
++- PDF：具有精确尺寸的可打印文档。
++- ZPL：用于 Zebra 工业热敏打印机的原始指令。
++
++## 应用场景
++
++- 制造与物流：设备维护二维码、仓库库位标签。
++- 企业与活动：员工工牌、访客通行证。
++- 零售：价格标签及商品目录、追踪链接。
++- 医疗：带唯一标识的设备或患者记录标签。
++
++## 核心引擎集成方式
++
++1. 将设计器的可视化状态转换为 `StickerLayout` JSON。
++2. 使用 `StickerPrinter.renderToCanvas` 实时渲染预览。
++3. 使用核心引擎内置的 PDF 和 ZPL 导出接口生成打印文件。
++
++## 参与开发
++
++可以在商业或个人项目中按许可证使用代码。问题和功能建议请提交到[当前仓库](https://github.com/GrayWitch/qr-code-label-designer-plus/issues)，也欢迎改进核心渲染逻辑并提交合并请求。
++
++## 启动方式
++
++```bash
++cd examples/demo-react
++npm install
++npm run dev
++```
++
++## 许可证
++
++MIT，详见 [LICENSE](../../LICENSE)。
+diff --git a/examples/angular-demo/README.md b/examples/angular-demo/README.md
+--- a/examples/angular-demo/README.md
++++ b/examples/angular-demo/README.md
+@@ -1,113 +1,75 @@
+-# QR Layout Demo Application (Angular)
+-
+-A comprehensive Angular application demonstrating the capabilities of the `qrlayout-ui` and `qrlayout-core` packages. This demo showcases a full-featured QR code badge implementation with design, management, and export capabilities for both employees and machines.
+-
+-### 🌐 Live Demo
+-You can view the live application deployed on Netlify here:
+-👉 **[QR Layout Designer - Angular Demo](https://qr-layout-designer-angular-demo.netlify.app/)**
+-
+----
+-
+-## Features
+-
+-### 1. Label Designer (`labels/designer`)
+-- **Visual Editor**: Drag-and-drop interactive workspace to design custom badge/sticker layouts.
+-- **Rich Elements**: Drag, resize, and position labels, QR codes, texts, etc.
+-- **Customization**: Fine-tune properties like text content, font size, margins, canvas height/width, padding, and positioning.
+-- **Persistence**: Easily save and load layouts locally using `localStorage`.
+-
+-### 2. Master Data Management
+-- **Employee Master**: CRUD operations to manage employee details (Name, ID, Department, Designation, etc.).
+-- **Machine Master**: CRUD operations to manage machine profiles (Name, ID, Department, Line, Status, etc.).
+-- **Search & Filtering**: Search and filter options to manage large datasets.
+-
+-### 3. Batch Export & Printing
+-- **Template Selection**: Select a custom template layout from your saved designs.
+-- **Individual/Batch Print**: Print high-quality labels for a single record or select multiple records for bulk action.
+-- **Export Options**:
+-    - **PNG**: Download high-resolution badge images.
+-    - **PDF**: Generate perfectly aligned printable PDF documents.
+-    - **ZPL**: Generate industrial-grade Zebra Programming Language (ZPL) printer code.
+-
+-### 4. Storage Utility
+-- **Backup & Restore**: Export entire local database (layouts, employees, machines) as a JSON file, or restore/import a backup.
+-- **Reset Options**: Wipe storage completely or reset to default demo data.
+-
+----
+-
+-## Tech Stack
+-- **Framework**: Angular 19 (Standalone components)
+-- **Styling**: Tailwind CSS 4 + `@tailwindcss/vite`
+-- **Icons**: Lucide Angular
+-- **Core Libraries**: `qrlayout-core`, `qrlayout-ui`
+-
+----
+-
+-## Getting Started
+-
+-### Prerequisites
+-- Node.js (v18 or higher recommended)
+-- `npm`
+-
+-### Installation
+-
+-1. Navigate to the project root:
+-   ```bash
+-   cd examples/angular-demo
+-   ```
+-
+-2. Install dependencies:
+-   ```bash
+-   npm install
+-   ```
+-
+-3. Start the development server:
+-   ```bash
+-   npm run start
+-   ```
+-   Open your browser and navigate to `http://localhost:4200/`.
+-
+----
+-
+-## Usage Guide
+-
+-### Designing a Badge
+-1. Navigate to the **"Labels"** tab.
+-2. Click **"New Layout"** to launch the designer.
+-3. Drag elements onto the canvas and adjust their properties in the sidebar panel.
+-4. Click **"Save Layout"** to persist your design.
+-
+-### Managing Masters
+-1. Navigate to the **"Employees"** or **"Machines"** tab.
+-2. Use **"Add Employee"** or **"Add Machine"** to input records.
+-3. Edit or delete existing records dynamically from the table view.
+-
+-### Batch Printing
+-1. Navigate to either the **"Employees"** or **"Machines"** tab.
+-2. Select a **Layout Template** from the dropdown selector at the top.
+-3. Check the boxes next to the records you wish to print.
+-4. Click **PNG**, **PDF**, or **ZPL** in the bulk actions bar to export the selected badges.
+-
+----
+-
+-## Project Structure
+-
+-```
+-src/app/
+-├── components/     # Application views and reusable controls
+-│   ├── designer/   # Custom drag-and-drop sticker builder workspace
+-│   ├── employees/  # Employee list and forms
+-│   ├── home/       # Home dashboard
+-│   ├── labels/     # Layout template catalog
+-│   ├── machines/   # Machine list and forms
+-│   ├── storage/    # Backup, import, and reset utilities
+-│   └── table/      # Reusable table control
+-├── services/       # Local database and layout services
+-├── app.routes.ts   # Client-side SPA routes
+-└── app.config.ts   # Configuration provider setup
+-```
+-
+----
+-
+-## License
+-MIT
++# 二维码标签示例应用（Angular）
++
++使用 Angular 展示 `qrlayout-ui` 和 `qrlayout-core` 的标签设计、管理与导出功能，支持员工和设备标签。
++
++## 功能特性
++
++### 标签设计器（`labels/designer`）
++
++- 拖拽创建工牌或贴纸布局，移动和缩放文本、二维码等元素。
++- 配置文本内容、字号、边距、画布宽高、内边距及元素位置。
++- 使用 `localStorage` 保存和加载布局。
++
++### 主数据管理
++
++- 员工管理：新增、编辑、删除姓名、编号、部门、职位等信息。
++- 设备管理：新增、编辑、删除设备名称、编号、部门、产线、状态等信息。
++- 通过搜索和筛选管理数据。
++
++### 批量导出与打印
++
++- 从已保存的布局中选择模板。
++- 为单条记录或多条记录生成标签。
++- 导出 PNG 图片、可打印 PDF，以及 Zebra 热敏打印机使用的 ZPL 指令。
++
++### 存储工具
++
++- 将布局、员工和设备数据备份为 JSON，或导入备份恢复数据。
++- 清空本地存储，或重置为默认示例数据。
++
++## 技术栈
++
++- Angular 19，使用独立组件。
++- Tailwind CSS 4 与 `@tailwindcss/vite`。
++- Lucide Angular 图标。
++- `qrlayout-core`、`qrlayout-ui`。
++
++## 启动方式
++
++建议使用 Node.js 18 或更高版本及 npm。
++
++```bash
++cd examples/angular-demo
++npm install
++npm run start
++```
++
++浏览器访问 `http://localhost:4200/`，或终端显示的地址。
++
++## 使用流程
++
++1. 打开标签页面，点击新建布局，拖入元素并在属性面板调整设置。
++2. 保存布局，再进入员工或设备页面新增、编辑或删除记录。
++3. 从页面顶部选择布局模板，勾选待打印记录。
++4. 在批量操作栏点击 PNG、PDF 或 ZPL，导出所选记录的标签。
++
++## 目录结构
++
++```text
++src/app/
++├── components/     # 页面与复用控件
++│   ├── designer/   # 拖拽标签设计器
++│   ├── employees/  # 员工列表与表单
++│   ├── home/       # 首页
++│   ├── labels/     # 布局模板列表
++│   ├── machines/   # 设备列表与表单
++│   ├── storage/    # 备份、导入与重置工具
++│   └── table/      # 复用表格
++├── services/       # 本地数据与布局服务
++├── app.routes.ts   # 前端路由
++└── app.config.ts   # 应用配置
++```
++
++## 许可证
++
++MIT，详见 [LICENSE](../../LICENSE)。
+diff --git a/package.json b/package.json
+--- a/package.json
++++ b/package.json
+@@ -1,62 +1,61 @@
+-{
+-  "name": "qr-layout-workspace",
+-  "version": "0.0.0",
+-  "private": true,
+-  "description": "Monorepo for QR Layout Tool - A professional-grade engine for designing and printing QR code layouts.",
+-  "keywords": [
+-    "qr-code",
+-    "layout-designer",
+-    "sticker-printer",
+-    "zpl",
+-    "pdf-generation",
+-    "react",
+-    "svelte",
+-    "vue",
+-    "typescript",
+-    "low-code"
+-  ],
+-  "author": "Shashidhar Naik <shashidharnaik8@gmail.com>",
+-  "license": "MIT",
+-  "homepage": "https://github.com/shashi089/qr-code-label-designer#readme",
+-  "bugs": {
+-    "url": "https://github.com/shashi089/qr-code-label-designer/issues"
+-  },
+-  "repository": {
+-    "type": "git",
+-    "url": "git+https://github.com/shashi089/qr-code-label-designer.git"
+-  },
+-  "engines": {
+-    "node": ">=16.0.0"
+-  },
+-  "workspaces": [
+-    "packages/*",
+-    "examples/react-qr-label-demo",
+-    "examples/svelte-qr-label-demo",
+-    "examples/vue-demo"
+-  ],
+-  "scripts": {
+-    "dev:ui": "npm --workspace packages/ui run dev",
+-    "dev:react": "npm --workspace examples/react-qr-label-demo run dev",
+-    "dev:vue": "npm --workspace examples/vue-demo run dev",
+-    "dev:next": "npm --prefix examples/next-demo run dev",
+-    "build:core": "npm --workspace packages/core run build",
+-    "build:ui": "npm --workspace packages/ui run build",
+-    "build:react": "npm --workspace packages/react-qr-label run build",
+-    "build:vue": "npm --workspace packages/vue-qr-label run build",
+-    "build:svelte": "npm --workspace packages/svelte-qr-label run build",
+-    "test:core": "npm test --workspace packages/core",
+-    "build": "npm run build:core && npm run build:ui && npm run build:react",
+-    "build:all": "npm run build:core && npm run build:ui && npm run build:react && npm run build:vue && npm run build:svelte",
+-    "publish:core": "npm --workspace packages/core publish --registry http://192.168.10.37:4873/ --access public",
+-    "publish:ui": "npm --workspace packages/ui publish --registry http://192.168.10.37:4873/ --access public",
+-    "publish:react": "npm --workspace packages/react-qr-label publish --registry http://192.168.10.37:4873/ --access public",
+-    "publish:vue": "npm --workspace packages/vue-qr-label publish --registry http://192.168.10.37:4873/ --access public",
+-    "publish:svelte": "npm --workspace packages/svelte-qr-label publish --registry http://192.168.10.37:4873/ --access public",
+-    "publish:all": "npm run publish:core && npm run publish:ui && npm run publish:react && npm run publish:vue && npm run publish:svelte",
+-    "version:core": "npm --workspace packages/core version",
+-    "version:ui": "npm --workspace packages/ui version",
+-    "version:react": "npm --workspace packages/react-qr-label version",
+-    "version:vue": "npm --workspace packages/vue-qr-label version",
+-    "version:svelte": "npm --workspace packages/svelte-qr-label version"
+-  }
+-}
++{
++  "name": "qr-layout-workspace",
++  "version": "0.0.0",
++  "private": true,
++  "description": "Monorepo for QR Layout Tool - A professional-grade engine for designing and printing QR code layouts.",
++  "keywords": [
++    "qr-code",
++    "layout-designer",
++    "sticker-printer",
++    "zpl",
++    "pdf-generation",
++    "react",
++    "svelte",
++    "vue",
++    "typescript",
++    "low-code"
++  ],
++  "license": "MIT",
++  "homepage": "https://github.com/GrayWitch/qr-code-label-designer-plus#readme",
++  "bugs": {
++    "url": "https://github.com/GrayWitch/qr-code-label-designer-plus/issues"
++  },
++  "repository": {
++    "type": "git",
++    "url": "git+https://github.com/GrayWitch/qr-code-label-designer-plus.git"
++  },
++  "engines": {
++    "node": ">=16.0.0"
++  },
++  "workspaces": [
++    "packages/*",
++    "examples/react-qr-label-demo",
++    "examples/svelte-qr-label-demo",
++    "examples/vue-demo"
++  ],
++  "scripts": {
++    "dev:ui": "npm --workspace packages/ui run dev",
++    "dev:react": "npm --workspace examples/react-qr-label-demo run dev",
++    "dev:vue": "npm --workspace examples/vue-demo run dev",
++    "dev:next": "npm --prefix examples/next-demo run dev",
++    "build:core": "npm --workspace packages/core run build",
++    "build:ui": "npm --workspace packages/ui run build",
++    "build:react": "npm --workspace packages/react-qr-label run build",
++    "build:vue": "npm --workspace packages/vue-qr-label run build",
++    "build:svelte": "npm --workspace packages/svelte-qr-label run build",
++    "test:core": "npm test --workspace packages/core",
++    "build": "npm run build:core && npm run build:ui && npm run build:react",
++    "build:all": "npm run build:core && npm run build:ui && npm run build:react && npm run build:vue && npm run build:svelte",
++    "publish:core": "npm --workspace packages/core publish --registry http://192.168.10.37:4873/ --access public",
++    "publish:ui": "npm --workspace packages/ui publish --registry http://192.168.10.37:4873/ --access public",
++    "publish:react": "npm --workspace packages/react-qr-label publish --registry http://192.168.10.37:4873/ --access public",
++    "publish:vue": "npm --workspace packages/vue-qr-label publish --registry http://192.168.10.37:4873/ --access public",
++    "publish:svelte": "npm --workspace packages/svelte-qr-label publish --registry http://192.168.10.37:4873/ --access public",
++    "publish:all": "npm run publish:core && npm run publish:ui && npm run publish:react && npm run publish:vue && npm run publish:svelte",
++    "version:core": "npm --workspace packages/core version",
++    "version:ui": "npm --workspace packages/ui version",
++    "version:react": "npm --workspace packages/react-qr-label version",
++    "version:vue": "npm --workspace packages/vue-qr-label version",
++    "version:svelte": "npm --workspace packages/svelte-qr-label version"
++  }
++}

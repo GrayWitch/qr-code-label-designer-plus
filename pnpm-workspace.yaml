@@ -1,0 +1,8 @@
+packages:
+  - packages/*
+  - examples/react-qr-label-demo
+  - examples/svelte-qr-label-demo
+  - examples/vue-demo
+allowBuilds:
+  core-js: true
+  esbuild: true
